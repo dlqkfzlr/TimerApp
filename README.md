@@ -15,5 +15,3 @@ A sample android app for practicing LiveData and Flow with Coroutine.
 - Navigation
 - ViewModel
 - Coroutine
-- Room
-- Hilt
