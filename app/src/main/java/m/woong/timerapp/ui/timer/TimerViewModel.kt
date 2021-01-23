@@ -1,13 +1,57 @@
 package m.woong.timerapp.ui.timer
 
+import android.os.CountDownTimer
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
 class TimerViewModel : ViewModel() {
 
-    private val _text = MutableLiveData<String>().apply {
-        value = "This is home Fragment"
+    private val _timeLiveData: MutableLiveData<Int> by lazy {
+        MutableLiveData<Int>()
     }
-    val text: LiveData<String> = _text
+    val timeLiveData: LiveData<Int> = _timeLiveData
+
+    var countDownTimer = object : CountDownTimer(60000, 1000) {
+        override fun onTick(p0: Long) {
+            _timeLiveData.value = (p0 / 1000).toInt()
+        }
+
+        override fun onFinish() {
+            _timeLiveData.value = 60
+        }
+    }
+
+    // START
+    fun startLiveData(){
+        countDownTimer.start()
+    }
+
+    fun startFlow(): Flow<Int> = flow {
+        for (i in 59 downTo 0) {
+            emit(i)
+            Log.d("Flow", "emit:$i")
+            delay(1000)
+        }
+    }
+
+    fun startTimer(){
+        startLiveData()
+        startFlow()
+    }
+
+    // PAUSE
+    fun stopLiveData(){
+        countDownTimer.cancel()
+    }
+
+    fun pauseTimer(){
+        startLiveData()
+        startFlow()
+    }
+
 }
