@@ -2,4 +2,7 @@
     <string name="app_name">TimerApp</string>
     <string name="title_timer">Timer</string>
     <string name="title_stopwatch">Stopwatch</string>
+    <string name="timer_start">START</string>
+    <string name="timer_pause">PAUSE</string>
+    <string name="timer_cancel">CANCEL</string>
 </resources>
