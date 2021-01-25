@@ -5,4 +5,6 @@
     <string name="timer_start">START</string>
     <string name="timer_pause">PAUSE</string>
     <string name="timer_cancel">CANCEL</string>
+    <string name="timer_60">60</string>
 </resources>
+

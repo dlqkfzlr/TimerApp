@@ -31,17 +31,12 @@ class TimerViewModel : ViewModel() {
         countDownTimer.start()
     }
 
-    fun startFlow(): Flow<Int> = flow {
-        for (i in 59 downTo 0) {
+    fun startFlow(time: Int): Flow<Int> = flow {
+        for (i in time downTo 0) {
             emit(i)
             Log.d("Flow", "emit:$i")
             delay(1000)
         }
-    }
-
-    fun startTimer(){
-        startLiveData()
-        startFlow()
     }
 
     // PAUSE
@@ -49,9 +44,5 @@ class TimerViewModel : ViewModel() {
         countDownTimer.cancel()
     }
 
-    fun pauseTimer(){
-        startLiveData()
-        startFlow()
-    }
 
 }
