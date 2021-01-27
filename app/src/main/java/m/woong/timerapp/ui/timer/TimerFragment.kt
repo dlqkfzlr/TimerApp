@@ -4,23 +4,24 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
 import m.woong.timerapp.R
+import m.woong.timerapp.SharedMainViewModel
 import m.woong.timerapp.databinding.FragmentTimerBinding
+import m.woong.timerapp.util.TimerStatus
+import m.woong.timerapp.util.TimerStatus.*
 
 class TimerFragment : Fragment() {
 
     private lateinit var binding: FragmentTimerBinding
-    private val timerViewModel: TimerViewModel by viewModels()
+    private val viewModel: SharedMainViewModel by activityViewModels()
     private var timerJob: Job? = null
-    private var isStarted = false
+    private var mStatus: TimerStatus = DEFAULT
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,52 +37,78 @@ class TimerFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.btnStart.setOnClickListener {
-            isStarted = if (!isStarted) {
-                binding.btnStart.text = "PAUSE"
-                startTimer1(60)
-                true
-            } else {
-
-                false
-            }
+            startTimer()
         }
 
         binding.btnCancel.setOnClickListener {
-            stopTimer1()
+            stopTimer()
         }
+
+        viewModel.timeLiveData.observe(viewLifecycleOwner, Observer {
+            // UI에 표시
+            binding.tvTime.text = it.toString()
+        })
     }
 
-
-    private fun startTimer1(time: Int) {
+    private fun startTimer() {
         if (USING_FLOW) {
-            timerJob = lifecycleScope.launch {
-                timerViewModel.startFlow(time).collect {
-                    // UI에 표시
-                    binding.tvTime.text = it.toString()
+            when(mStatus){
+                DEFAULT -> {
+                    mStatus = STARTED
+                    timerJob = viewLifecycleOwner.lifecycleScope.launch {
+                        viewModel.startFlow().collect {
+                            // UI에 표시
+                            binding.tvTime.text = it.toString()
+                        }
+                    }
+                }
+                STARTED -> { // 일시정지
+                    mStatus = PAUSED
+
+
+                }
+                PAUSED -> {  // 재개
+                    mStatus = STARTED
+
                 }
             }
         } else {
-            timerViewModel.startLiveData()
-            timerViewModel.timeLiveData.observe(viewLifecycleOwner, Observer {
-                // UI에 표시
-                binding.tvTime.text = it.toString()
-            })
+            when(mStatus){
+                DEFAULT -> {
+                    mStatus = STARTED
+                    viewModel.startLiveData()
+                }
+                STARTED -> { // 일시정지
+                    mStatus = PAUSED
+
+
+                }
+                PAUSED -> {  // 재개
+                    mStatus = STARTED
+
+                }
+            }
         }
+        changeBtnText(mStatus)
     }
 
-    private fun stopTimer1() {
-        isStarted = false
-        changeBtnText(isStarted)
+    private fun stopTimer() {
+        mStatus = DEFAULT
+        changeBtnText(mStatus)
         binding.tvTime.text = getString(R.string.timer_60)
         if (USING_FLOW) {
             timerJob?.cancel()
         } else{
-            timerViewModel.stopLiveData()
+            viewModel.stopLiveData()
         }
     }
 
-    private fun changeBtnText(isStarted: Boolean) {
-        binding.btnStart.text = if (isStarted) "PAUSE" else "START"
+    private fun changeBtnText(status: TimerStatus) {
+        binding.btnStart.text = when (status) {
+            DEFAULT -> "START"
+            STARTED -> "PAUSE"
+            PAUSED -> "RESUME"
+        }
     }
 
     override fun onDestroyView() {
@@ -89,6 +116,8 @@ class TimerFragment : Fragment() {
     }
 
     companion object {
-        const val USING_FLOW = true
+        const val USING_FLOW = false
     }
 }
+
+

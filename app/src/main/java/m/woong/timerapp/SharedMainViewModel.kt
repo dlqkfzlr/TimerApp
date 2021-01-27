@@ -1,4 +1,4 @@
-package m.woong.timerapp.ui.timer
+package m.woong.timerapp
 
 import android.os.CountDownTimer
 import android.util.Log
@@ -9,7 +9,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-class TimerViewModel : ViewModel() {
+class SharedMainViewModel : ViewModel() {
+
+    private var startSecond = 60
 
     private val _timeLiveData: MutableLiveData<Int> by lazy {
         MutableLiveData<Int>()
@@ -31,10 +33,11 @@ class TimerViewModel : ViewModel() {
         countDownTimer.start()
     }
 
-    fun startFlow(time: Int): Flow<Int> = flow {
+    fun startFlow(time: Int = startSecond): Flow<Int> = flow {
         for (i in time downTo 0) {
             emit(i)
             Log.d("Flow", "emit:$i")
+            startSecond = i
             delay(1000)
         }
     }
@@ -43,6 +46,5 @@ class TimerViewModel : ViewModel() {
     fun stopLiveData(){
         countDownTimer.cancel()
     }
-
 
 }
